@@ -5,9 +5,15 @@ ecstatic = require('ecstatic')('./')
 coffee = require 'coffee-script'
 jade = require 'jade'
 styl = require 'styl'
+argv = require('optimist').argv
+
+HOST = if argv.host? then argv.host else '0.0.0.0'
+PORT = if argv.port? then argv.port else 8000
 
 server = http.createServer (req, res) ->
     console.log "Serving #{ req.url }"
+    if req.url == '/'
+        req.url = '/index.html'
     if matched = req.url.match /^\/([^.\/]+)(.html)?$/
         res.setHeader 'Content-Type', 'text/html'
         filename = matched[1] + '.jade'
@@ -25,6 +31,4 @@ server = http.createServer (req, res) ->
     console.log "Falling back to ecstatic."
     ecstatic(req, res)
 
-port = 8000
-host = '0.0.0.0'
-server.listen port, host, -> console.log "metaserving on #{ host }:#{ port }."
+server.listen PORT, HOST, -> console.log "metaserving on #{ HOST }:#{ PORT }."
