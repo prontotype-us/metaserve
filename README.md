@@ -5,7 +5,9 @@ quickly serve metalanguage-heavy static sites without continual recompilation
 
 ## Installation
 
-Clone this repository and `npm install -g`
+**Standalone:** Clone this repository and `npm install -g`
+
+**Module:** Clone this repository and `npm install`
 
 ## Usage
 
