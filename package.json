@@ -1,0 +1,32 @@
+{
+    "name": "metaserve",
+    "version": "0.1.0",
+    "description": "quickly serve metalanguage-heavy static sites without continual recompilation",
+    "homepage": "http://github.com/spro/metaserve",
+    "repository": {
+        "type": "git",
+        "url": "http://github.com/spro/metaserve.git"
+    },
+    "author": {
+        "name": "Sean Robertson",
+        "url": "http://sprobertson.com"
+    },
+    "keywords": [
+        "http",
+        "server"
+    ],
+    "bin": {
+        "metaserve": "bin/metaserve.js"
+    },
+    "scripts": {
+        "build": "./build.sh"
+    },
+    "dependencies": {
+        "optimist": "0.6.x",
+        "ecstatic": "0.4.x",
+        "coffee-script": "1.6.x",
+        "jade": "0.34.x",
+        "styl": "0.2.x"
+    },
+    "preferGlobal": true
+}
