@@ -16,16 +16,16 @@ module.exports = metaserve = (base_dir) ->
     return (req, res) ->
         if req.url == '/'
             req.url = '/index.html'
-        if matched = req.url.match /([\w\/]+).html/
+        if matched = req.url.match /(.+)\.html/
             res.setHeader 'Content-Type', 'text/html'
             filename = matched[1] + '.jade'
             if fs.existsSync base_dir + filename
                 return res.end jade.compile(fs.readFileSync(base_dir + filename).toString(), {filename: base_dir})()
-        else if matched = req.url.match /([\w\/]+).js/
+        else if matched = req.url.match /(.+)\.js/
             filename = matched[1] + '.coffee'
             if fs.existsSync base_dir + filename
                 return res.end coffee.compile(fs.readFileSync(base_dir + filename).toString())
-        else if matched = req.url.match /([\w\/]+).css/
+        else if matched = req.url.match /(.+)\.css/
             filename = matched[1] + '.sass'
             if fs.existsSync base_dir + filename
                 return res.end styl(fs.readFileSync(base_dir + filename).toString(), {whitespace: true}).toString()
@@ -33,5 +33,5 @@ module.exports = metaserve = (base_dir) ->
         ecstatic(req, res)
 
 if require.main == module
-    server = http.createServer metaserve
+    server = http.createServer metaserve()
     server.listen PORT, HOST, -> console.log "metaserving on #{ HOST }:#{ PORT }."
