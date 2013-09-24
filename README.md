@@ -22,7 +22,7 @@ Optional arguments are `--host` and `--port`. Defaults to 0.0.0.0:8000.
 Use as a fallback in a standard `http` server
 
 ``` javascript
-var metaserve = require('metaserve');
+var metaserve = require('metaserve')('./static');
 
 http.createServer(function(req, res) {
     if (req.url == "/dogs") {
