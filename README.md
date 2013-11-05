@@ -3,7 +3,7 @@ metaserve
 
 metaserve makes web application prototyping quicker by compiling and serving assets built with meta-languages<sup>[\[1\]](#notes)</sup> such as CoffeeScript, Jade, or Styl (currently the [full list](#supported-languages)).
 
-Use [as a command](#as-a-command) or [as a module](#as-a-module) to handle requests such as `http://localhost:8550/js/events.js` by run-time-compiling `./app/static/js/events.coffee` and serving it to the browser. Somewhat similar to but less robust/contrived than Rails Asset Pipeline.
+Use [as a command](#as-a-command) or [as a module](#as-a-module) to handle requests such as `http://localhost:8550/js/events.js` by run-time-compiling the CoffeeScript source `./static/js/events.coffee` into Javascript and serving it to the browser. Somewhat similar to but less robust/contrived than Rails Asset Pipeline.
 
 ## As a command
 
@@ -18,20 +18,39 @@ Run `metaserve` with optional arguments `--host` and `--port`. Defaults to 0.0.0
 
 **Install** by cloning this repository and `npm install -g`
 
-**Use** as a fallback in a standard `http` server
+**Use** by supplying a base directory, then hooking it in as Express/Connect middleware...
 
 ``` javascript
+var metaserve = require('metaserve');
+var express = require('express');
+
+app = express();
+
+app.use(app.router);
+app.use(metaserve('./static'));
+
+app.get('/dogs', function(req, res) {
+    return res.end('woof');
+});
+
+app.listen(8550);
+```
+
+... or as a fallback in a standard `http` server:
+
+``` javascript
+var http = require('http');
 var metaserve = require('metaserve')('./static');
 
-http.createServer(function(req, res) {
-    if (req.url == "/dogs") {
-        // Handle the custom route
-        return show_dogs();
+var server = http.createServer(function(req, res) {
+    if (req.url === '/dogs') {
+        return res.end('woof');
     } else {
-        // Fall back to metaserve
-        metaserve(req, res);
+        return metaserve(req, res);
     }
 });
+
+server.listen(8550);
 ```
 
 ## Supported Languages
