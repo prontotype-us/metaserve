@@ -1,7 +1,7 @@
 {
     "name": "metaserve",
-    "version": "0.1.0",
-    "description": "quickly serve metalanguage-heavy static sites without continual recompilation",
+    "version": "0.1.1",
+    "description": "compile & serve metalanguage assets",
     "homepage": "http://github.com/spro/metaserve",
     "repository": {
         "type": "git",
@@ -27,6 +27,5 @@
         "coffee-script": "1.6.x",
         "jade": "0.34.x",
         "styl": "0.2.x"
-    },
-    "preferGlobal": true
+    }
 }
