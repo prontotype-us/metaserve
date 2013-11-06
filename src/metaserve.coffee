@@ -46,6 +46,13 @@ module.exports = metaserve = (base_dir, opts={}) ->
 
                     # If this uncompiled extension version exists, compile
                     if fs.existsSync base_dir + filename
+                        file_stats = fs.statSync base_dir + filename
+
+                        # Check for 304
+                        if (new Date(Date.parse(req.headers['if-modified-since'])) >= file_stats.mtime)
+                            res.statusCode = 304
+                            return res.end()
+
                         # Read and compile the file
                         file_str = fs.readFileSync(base_dir + filename).toString()
                         compiled_str = compiler(file_str)
@@ -53,6 +60,11 @@ module.exports = metaserve = (base_dir, opts={}) ->
                         # Minify if desired
                         if opts.minify && metadata.minify
                             compiled_str = metadata.minify compiled_str
+
+                        # Set necessary headers
+                        res.setHeader('last-modified', (new Date(file_stats.mtime)).toUTCString())
+                        res.setHeader('cache-control', "max-age=#{ opts.max_age or 3600 }")
+                        res.setHeader('content-type', metadata.content_type || 'application/octet-stream')
 
                         # Respond with compiled source
                         return res.end compiled_str
