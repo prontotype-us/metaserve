@@ -26,6 +26,7 @@
         "ecstatic": "0.4.x",
         "coffee-script": "1.6.x",
         "jade": "0.34.x",
-        "styl": "0.2.x"
+        "styl": "0.2.x",
+        "uglify-js": "2.x.x"
     }
 }
