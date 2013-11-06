@@ -5,8 +5,9 @@ Ecstatic = require 'ecstatic'
 coffee = require 'coffee-script'
 jade = require 'jade'
 styl = require 'styl'
+uglify = require 'uglify-js'
 
-module.exports = metaserve = (base_dir) ->
+module.exports = metaserve = (base_dir, opts={}) ->
     base_dir = '.' if !base_dir
 
     # Define the relevant file extensions, what their content-type should be and
@@ -22,6 +23,8 @@ module.exports = metaserve = (base_dir) ->
             compilers:
                 coffee: (file_str) ->
                     coffee.compile(file_str)
+            minify: (compiled_str) ->
+                uglify.minify(compiled_str, {fromString: true}).code
         css:
             content_type: 'text/css'
             compilers:
@@ -46,6 +49,10 @@ module.exports = metaserve = (base_dir) ->
                         # Read and compile the file
                         file_str = fs.readFileSync(base_dir + filename).toString()
                         compiled_str = compiler(file_str)
+
+                        # Minify if desired
+                        if opts.minify && metadata.minify
+                            compiled_str = metadata.minify compiled_str
 
                         # Respond with compiled source
                         return res.end compiled_str
