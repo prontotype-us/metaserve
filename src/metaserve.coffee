@@ -7,6 +7,9 @@ jade = require 'jade'
 styl = require 'styl'
 uglify = require 'uglify-js'
 
+# Reduce millisecond resolution to second reoslution for last-modified
+de_res = (n) -> Math.floor(n/1000)*1000
+
 module.exports = metaserve = (base_dir, opts={}) ->
     base_dir = '.' if !base_dir
 
@@ -49,7 +52,7 @@ module.exports = metaserve = (base_dir, opts={}) ->
                         file_stats = fs.statSync base_dir + filename
 
                         # Check for 304
-                        if (new Date(Date.parse(req.headers['if-modified-since'])) >= file_stats.mtime)
+                        if (Date.parse(req.headers['if-modified-since']) >= de_res(file_stats.mtime.getTime()))
                             res.statusCode = 304
                             return res.end()
 
