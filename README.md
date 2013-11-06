@@ -14,8 +14,6 @@ Run `metaserve` with optional arguments `--host` and `--port`. Defaults to 0.0.0
 
 ## As a module
 
-### Installation
-
 **Install** by cloning this repository and `npm install -g`
 
 **Use** by supplying a base directory, then hooking it in as Express/Connect middleware...
