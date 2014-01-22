@@ -1,7 +1,7 @@
 #!/usr/bin/env coffee
 http = require 'http'
 fs = require 'fs'
-Ecstatic = require 'ecstatic'
+send = require 'send'
 coffee = require 'coffee-script'
 jade = require 'jade'
 styl = require 'styl'
@@ -33,10 +33,6 @@ module.exports = metaserve = (base_dir, opts={}) ->
             compilers:
                 sass: (file_str) ->
                     styl(file_str, {whitespace: true}).toString()
-
-    ecstatic = Ecstatic
-        root: base_dir
-        handleError: false
 
     return (req, res) ->
         # Translate index request
@@ -75,8 +71,12 @@ module.exports = metaserve = (base_dir, opts={}) ->
                         # Respond with compiled source
                         return res.end compiled_str
 
-        # If all else fails let Ecstatic handle it
-        ecstatic(req, res)
+        # If all else fails let Send handle it
+        send(req, url.parse(req.url).pathname)
+            .root(base_dir)
+            .on 'error', (err) ->
+                next(err)
+            .pipe(res)
 
 # Stand-alone mode
 if require.main == module
