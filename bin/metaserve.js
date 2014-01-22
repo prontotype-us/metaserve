@@ -67,7 +67,7 @@
         }
       }
     };
-    return function(req, res) {
+    return function(req, res, next) {
       var compiled_str, compiler, ext, file_stats, file_str, filename, matched, metadata, uext, _ref;
 
       if (req.url === '/') {
