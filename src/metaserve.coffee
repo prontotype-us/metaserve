@@ -35,7 +35,7 @@ module.exports = metaserve = (base_dir, opts={}) ->
                 sass: (file_str) ->
                     styl(file_str, {whitespace: true}).toString()
 
-    return (req, res) ->
+    return (req, res, next) ->
         # Translate index request
         if req.url == '/' then req.url = '/index.html'
 
