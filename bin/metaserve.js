@@ -65,7 +65,10 @@
         }
       }
     };
-    ecstatic = Ecstatic(base_dir);
+    ecstatic = Ecstatic({
+      root: base_dir,
+      handleError: false
+    });
     return function(req, res) {
       var compiled_str, compiler, ext, file_stats, file_str, filename, matched, metadata, uext, _ref;
 
