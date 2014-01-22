@@ -1,6 +1,7 @@
 #!/usr/bin/env coffee
 http = require 'http'
 fs = require 'fs'
+url = require 'url'
 send = require 'send'
 coffee = require 'coffee-script'
 jade = require 'jade'
