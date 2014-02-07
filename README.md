@@ -7,14 +7,14 @@ Use [as a command](#as-a-command) or [as a module](#as-a-module) to handle reque
 
 ## As a command
 
-**Install** by cloning this repository and `npm install -g`
+**Install** with `npm install -g metaserve`
 
 **Use** within a directory that has a bunch of **.jade**, **.sass** and **.coffee**.
 Run `metaserve` with optional arguments `--host` and `--port`. Defaults to 0.0.0.0:8000.
 
 ## As a module
 
-**Install** by cloning this repository and `npm install -g`
+**Install** with `npm install metaserve`
 
 **Use** by supplying a base directory, then hooking it in as Express/Connect middleware...
 
