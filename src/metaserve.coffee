@@ -21,7 +21,7 @@ module.exports = metaserve = (base_dir, opts={}) ->
             content_type: 'text/html'
             compilers:
                 jade: (file_str) ->
-                    jade.compile(file_str, {filename: base_dir})()
+                    jade.compile(file_str, {filename: base_dir + '/_.jade'})()
         js:
             content_type: 'text/javascript'
             compilers:
