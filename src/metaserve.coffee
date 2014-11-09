@@ -8,7 +8,7 @@ jade = require 'jade'
 styl = require 'styl'
 uglify = require 'uglify-js'
 
-# Reduce millisecond resolution to second reoslution for last-modified
+# Reduce millisecond resolution to second resolution for last-modified
 de_res = (n) -> Math.floor(n/1000)*1000
 
 module.exports = metaserve = (base_dir, opts={}) ->
@@ -36,6 +36,8 @@ module.exports = metaserve = (base_dir, opts={}) ->
                     styl(file_str, {whitespace: true}).toString()
 
     return (req, res, next) ->
+        console.log "[#{ req.method }] #{ req.url }"
+
         # Translate index request
         if req.url == '/' then req.url = '/index.html'
 
@@ -73,18 +75,22 @@ module.exports = metaserve = (base_dir, opts={}) ->
                         return res.end compiled_str
 
         # If all else fails let Send handle it
-        send(req, url.parse(req.url).pathname)
-            .root(base_dir)
+        filepath = base_dir + url.parse(req.url).pathname
+        send(req, filepath)
             .on 'error', (err) ->
-                next(err)
+                console.log '[ERROR] <' + filepath + '> ' + err
+                next(err) if next?
             .pipe(res)
 
 # Stand-alone mode
 if require.main == module
     argv = require('optimist').argv
 
-    HOST = if argv.host? then argv.host else '0.0.0.0'
-    PORT = if argv.port? then argv.port else 8000
+    HOST = argv.host || '0.0.0.0'
+    PORT = argv.port || 8000
+    BASE_DIR = argv._[0] || '.'
+    console.log BASE_DIR
 
-    server = http.createServer metaserve()
+    server = http.createServer metaserve(BASE_DIR)
     server.listen PORT, HOST, -> console.log "metaserving on #{ HOST }:#{ PORT }."
+
