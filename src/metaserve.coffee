@@ -74,13 +74,14 @@ module.exports = metaserve = (base_dir, opts={}) ->
                         # Respond with compiled source
                         return res.end compiled_str
 
-        # If all else fails let Send handle it
+        # If all else fails just do a fs.readFile
         filepath = base_dir + url.parse(req.url).pathname
-        send(req, filepath)
-            .on 'error', (err) ->
-                console.log '[ERROR] <' + filepath + '> ' + err
-                next(err) if next?
-            .pipe(res)
+        fs.readFile filepath, (err, file) ->
+            if err?
+                res.writeHead(404, {'Content-Type': 'text/plain'})
+                res.end("Error: #{ err }")
+            else
+                res.end(file)
 
 # Stand-alone mode
 if require.main == module

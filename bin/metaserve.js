@@ -99,12 +99,16 @@
         }
       }
       filepath = base_dir + url.parse(req.url).pathname;
-      return send(req, filepath).on('error', function(err) {
-        console.log('[ERROR] <' + filepath + '> ' + err);
-        if (next != null) {
-          return next(err);
+      return fs.readFile(filepath, function(err, file) {
+        if (err != null) {
+          res.writeHead(404, {
+            'Content-Type': 'text/plain'
+          });
+          return res.end("Error: " + err);
+        } else {
+          return res.end(file);
         }
-      }).pipe(res);
+      });
     };
   };
 
