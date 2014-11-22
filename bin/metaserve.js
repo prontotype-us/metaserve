@@ -46,7 +46,9 @@
         content_type: 'text/javascript',
         compilers: {
           coffee: function(file_str) {
-            return coffee.compile(file_str);
+            return coffee.compile(file_str, {
+              bare: true
+            });
           }
         },
         minify: function(compiled_str) {

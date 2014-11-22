@@ -26,7 +26,7 @@ module.exports = metaserve = (base_dir, opts={}) ->
             content_type: 'text/javascript'
             compilers:
                 coffee: (file_str) ->
-                    coffee.compile(file_str)
+                    coffee.compile(file_str, {bare: true})
             minify: (compiled_str) ->
                 uglify.minify(compiled_str, {fromString: true}).code
         css:
