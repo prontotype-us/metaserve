@@ -1,6 +1,6 @@
 {
     "name": "metaserve",
-    "version": "0.1.10",
+    "version": "0.2.0",
     "description": "compile & serve metalanguage assets",
     "homepage": "http://github.com/spro/metaserve",
     "repository": {
@@ -15,6 +15,7 @@
         "http",
         "server"
     ],
+    "main": "bin/metaserve.js",
     "bin": {
         "metaserve": "bin/metaserve.js"
     },
@@ -24,7 +25,7 @@
     "dependencies": {
         "optimist": "0.6.x",
         "send": "0.1.x",
-        "coffee-script": "1.6.x",
+        "coffee-script": "1.7.x",
         "jade": "0.34.x",
         "styl": "0.2.x",
         "uglify-js": "2.x.x"

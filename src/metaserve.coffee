@@ -1,97 +1,88 @@
 #!/usr/bin/env coffee
-http = require 'http'
 fs = require 'fs'
 url = require 'url'
-send = require 'send'
 coffee = require 'coffee-script'
 jade = require 'jade'
-styl = require 'styl'
 uglify = require 'uglify-js'
+_ = require 'underscore'
 
-# Reduce millisecond resolution to second resolution for last-modified
+# Reduce timestamp resolution from ms to s for last-modified
 de_res = (n) -> Math.floor(n/1000)*1000
 
-module.exports = metaserve = (base_dir, opts={}) ->
-    base_dir = '.' if !base_dir
+# Default options
 
-    # Define the relevant file extensions, what their content-type should be and
-    # what their uncompressed versions might look like
-    file_types =
-        html:
-            content_type: 'text/html'
-            compilers:
-                jade: (file_str) ->
-                    jade.compile(file_str, {filename: base_dir + '/_.jade'})()
-        js:
-            content_type: 'text/javascript'
-            compilers:
-                coffee: (file_str) ->
-                    coffee.compile(file_str, {bare: true})
-            minify: (compiled_str) ->
-                uglify.minify(compiled_str, {fromString: true}).code
-        css:
-            content_type: 'text/css'
-            compilers:
-                sass: (file_str) ->
-                    styl(file_str, {whitespace: true}).toString()
+DEFAULT_BASE_DIR = './static'
+DEFAULT_COMPILERS = ->
+
+    '\/(.*)\.html': require('./compilers/html/jade')()
+    '\/js\/(.*)\.js': require('./compilers/js/coffee')()
+    '\/css\/(.*)\.css': require('./compilers/css/styl')()
+
+module.exports = metaserve = (options={}) ->
+
+    # Support both metaserve(base_dir) and metaserve(options) syntax
+    if _.isString options
+        options = {base_dir: options}
+
+    options.base_dir ||= DEFAULT_BASE_DIR
+    options.compilers ||= DEFAULT_COMPILERS()
 
     return (req, res, next) ->
-        console.log "[#{ req.method }] #{ req.url }"
+        file_url = url.parse(req.url).pathname
 
         # Translate index request
-        if req.url == '/' then req.url = '/index.html'
+        if file_url.slice(-1)[0] == '/' then file_url += 'index.html'
+        console.log "[#{ req.method }] #{ file_url }"
 
         # Loop through each of the file types to see if the url matches
-        for ext, metadata of file_types
-            if matched = req.url.match new RegExp '(.+)\.' + ext
+        for url_match, compilers of options.compilers
+            if !_.isArray compilers
+                compilers = [compilers]
 
-                # If it's a supported file type, loop through relevant extensions
-                for uext, compiler of metadata.compilers
-                    filename = matched[1] + '.' + uext
+            # If it's a compileable file type...
+            if matched = file_url.match new RegExp url_match
 
-                    # If this uncompiled extension version exists, compile
-                    if fs.existsSync base_dir + filename
-                        file_stats = fs.statSync base_dir + filename
+                # Loop through the sources
+                for compiler in compilers
 
-                        # Check for 304
-                        if (Date.parse(req.headers['if-modified-since']) >= de_res(file_stats.mtime.getTime()))
-                            res.statusCode = 304
-                            return res.end()
+                    {base_dir, ext} = compiler.options
+                    filename_stem = matched[1]
+                    filename = base_dir + '/' + filename_stem + '.' + ext
 
-                        # Read and compile the file
-                        file_str = fs.readFileSync(base_dir + filename).toString()
-                        compiled_str = compiler(file_str)
+                    # To find and compile a matching source file
+                    if fs.existsSync filename
+                        if compiler.shouldCompile?
+                            if !compiler.shouldCompile(filename)(req, res, next)
+                                console.log "[metaserve] Skipping compiler for #{ filename }"
+                                continue
 
-                        # Minify if desired
-                        if opts.minify && metadata.minify
-                            compiled_str = metadata.minify compiled_str
+                        console.log "[metaserve] Using compiler for #{ file_url } (#{ filename })"
+                        return compiler.compile(filename)(req, res, next)
 
-                        # Set necessary headers
-                        res.setHeader('last-modified', (new Date(file_stats.mtime)).toUTCString())
-                        res.setHeader('cache-control', "max-age=#{ opts.max_age or 3600 }")
-                        res.setHeader('content-type', metadata.content_type || 'application/octet-stream')
+                    else
+                        console.log "[metaserve] File not found for #{ filename }"
 
-                        # Respond with compiled source
-                        return res.end compiled_str
-
-        # If all else fails just do a fs.readFile
-        filepath = base_dir + url.parse(req.url).pathname
-        fs.readFile filepath, (err, file) ->
-            if err?
-                res.writeHead(404, {'Content-Type': 'text/plain'})
-                res.end("Error: #{ err }")
-            else
-                res.end(file)
+        # If all else fails just use express's res.sendfile
+        filename = options.base_dir + file_url
+        console.log '[normalserve] falling back with ' + filename
+        if fs.existsSync filename
+            res.sendfile filename
+        else
+            res.send 404, '404, for the file seems absent.'
 
 # Stand-alone mode
 if require.main == module
-    argv = require('optimist').argv
+    express = require 'express'
+    argv = require('yargs').argv
 
     HOST = argv.host || '0.0.0.0'
     PORT = argv.port || 8000
-    BASE_DIR = argv._[0] || '.'
-    console.log BASE_DIR
+    BASE_DIR = argv._[0] || './static'
 
-    server = http.createServer metaserve(BASE_DIR)
-    server.listen PORT, HOST, -> console.log "metaserving on #{ HOST }:#{ PORT }."
+    options = base_dir: BASE_DIR
+
+    server = express()
+        .use(metaserve(options))
+
+    server.listen PORT, HOST, -> console.log "metaserving on #{ HOST }:#{ PORT }..."
 
