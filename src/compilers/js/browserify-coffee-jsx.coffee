@@ -1,29 +1,22 @@
 fs = require 'fs'
 browserify = require 'browserify'
 coffee_reactify = require 'coffee-reactify'
-React = require 'react'
+browserify_shim = require 'browserify-shim'
+{BrowserifyCompiler} = require 'metaserve/src/compilers/js/browserify'
 require('node-cjsx').transform()
-Compiler = require 'metaserve/src/compiler'
 
-class CoffeeJSXCompiler extends Compiler
+class BrowserifyCoffeeJSXCompiler extends BrowserifyCompiler
 
     default_options:
         base_dir: './static/js'
         ext: 'coffee'
-        browserify_options:
+        browserify:
             extensions: ['.coffee']
 
-    compile: (coffee_filename) ->
-        options = @options
-        return (req, res, next) ->
-            try
-                console.log '[coffee/JSX Compiler] Going to compile ' + coffee_filename
-                bundler = browserify(options.browserify_options)
-                bundler.transform coffee_reactify
-                bundler.add(coffee_filename).bundle().pipe(res)
-            catch e
-                console.log '[coffee/JSX Compiler] ERROR ' + e
-                res.send 500, e.toString()
+    beforeBundle: (bundler) ->
+        bundler
+            .transform(coffee_reactify)
+            .transform(browserify_shim)
 
-module.exports = (options={}) -> new CoffeeJSXCompiler(options)
+module.exports = (options={}) -> new BrowserifyCoffeeJSXCompiler(options)
 
