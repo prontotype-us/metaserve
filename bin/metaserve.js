@@ -62,20 +62,18 @@
             if (fs.existsSync(filename)) {
               if (compiler.shouldCompile != null) {
                 if (!compiler.shouldCompile(filename)(req, res, next)) {
-                  console.log("[metaserve] Skipping compiler for " + filename);
                   continue;
                 }
               }
               console.log("[metaserve] Using compiler for " + file_url + " (" + filename + ")");
               return compiler.compile(filename)(req, res, next);
             } else {
-              console.log("[metaserve] File not found for " + filename);
+
             }
           }
         }
       }
       filename = options.base_dir + file_url;
-      console.log('[normalserve] falling back with ' + filename);
       if (fs.existsSync(filename)) {
         return res.sendfile(filename);
       } else {

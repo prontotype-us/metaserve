@@ -57,6 +57,6 @@
     return new BrowserifyCompiler(options);
   };
 
-  exports.BrowserifyCompiler = BrowserifyCompiler;
+  module.exports.BrowserifyCompiler = BrowserifyCompiler;
 
 }).call(this);

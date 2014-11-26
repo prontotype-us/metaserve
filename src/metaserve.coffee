@@ -53,18 +53,18 @@ module.exports = metaserve = (options={}) ->
                     if fs.existsSync filename
                         if compiler.shouldCompile?
                             if !compiler.shouldCompile(filename)(req, res, next)
-                                console.log "[metaserve] Skipping compiler for #{ filename }"
+                                #console.log "[metaserve] Skipping compiler for #{ filename }"
                                 continue
 
                         console.log "[metaserve] Using compiler for #{ file_url } (#{ filename })"
                         return compiler.compile(filename)(req, res, next)
 
                     else
-                        console.log "[metaserve] File not found for #{ filename }"
+                        #console.log "[metaserve] File not found for #{ filename }"
 
         # If all else fails just use express's res.sendfile
         filename = options.base_dir + file_url
-        console.log '[normalserve] falling back with ' + filename
+        #console.log '[normalserve] falling back with ' + filename
         if fs.existsSync filename
             res.sendfile filename
         else
