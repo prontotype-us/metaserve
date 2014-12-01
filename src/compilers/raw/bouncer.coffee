@@ -9,8 +9,9 @@ class Bouncer extends Compiler
             res.sendfile bounced_filename
 
     shouldCompile: (bounced_filename) ->
+        enabled = if @options.enabled? then @options.enabled else true
         return (req, res, next) ->
-            return !req.headers['x-skip-bouncer']?
+            return enabled && !req.headers['x-skip-bouncer']?
 
 module.exports = (options={}) -> new Bouncer(options)
 
