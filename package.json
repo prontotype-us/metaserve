@@ -23,11 +23,19 @@
         "build": "./build.sh"
     },
     "dependencies": {
-        "optimist": "0.6.x",
-        "send": "0.1.x",
-        "coffee-script": "1.7.x",
+        "browserify": "6.3.x",
+        "browserify-shim": "3.8.x",
+        "coffee-reactify": "2.0.x",
+        "coffee-script": "1.8.x",
         "jade": "0.34.x",
+        "node-cjsx": "0.1.x",
+        "react": "0.12.x",
+        "rework-color-function": "1.1.x",
+        "rework-import": "1.2.x",
+        "rework-plugin-colors": "1.0.x",
+        "rework-shade": "1.4.x",
+        "rework-variant": "0.2.x",
         "styl": "0.2.x",
-        "uglify-js": "2.x.x"
+        "uglify-js": "2.4.x"
     }
 }
