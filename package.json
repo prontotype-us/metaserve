@@ -1,6 +1,6 @@
 {
     "name": "metaserve",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "description": "compile & serve metalanguage assets",
     "homepage": "http://github.com/spro/metaserve",
     "repository": {
@@ -28,8 +28,6 @@
         "coffee-reactify": "2.0.x",
         "coffee-script": "1.8.x",
         "jade": "0.34.x",
-        "node-cjsx": "0.1.x",
-        "react": "0.12.x",
         "rework-color-function": "1.1.x",
         "rework-import": "1.2.x",
         "rework-plugin-colors": "1.0.x",
