@@ -41,15 +41,18 @@
       var options;
       options = this.options;
       return function(req, res, next) {
-        var compiled, sass_src, transformer, variant;
+        var compiled, pre_transformer, sass_src, transformer, variant;
         variant = rework_variant(options.vars);
-        transformer = function(sass_src) {
+        pre_transformer = function(sass_src) {
           return styl(sass_src, {
             whitespace: true
           }).use(rework_import({
             path: options.base_dir,
-            transform: transformer
-          })).use(variant).use(rework_colors()).use(rework_color).toString();
+            transform: pre_transformer
+          })).toString();
+        };
+        transformer = function(sass_src) {
+          return styl(pre_transformer(sass_src)).use(variant).use(rework_colors()).use(rework_color).toString();
         };
         sass_src = fs.readFileSync(sass_filename).toString();
         compiled = transformer(sass_src);
