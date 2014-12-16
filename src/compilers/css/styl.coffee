@@ -22,9 +22,13 @@ class StylCompiler extends Compiler
         return (req, res, next) ->
 
             variant = rework_variant(options.vars)
-            transformer = (sass_src) ->
+            pre_transformer = (sass_src) ->
                 styl(sass_src, {whitespace: true})
-                    .use(rework_import({path: options.base_dir, transform: transformer}))
+                    .use(rework_import({path: options.base_dir, transform: pre_transformer}))
+                    .toString()
+
+            transformer = (sass_src) ->
+                styl(pre_transformer(sass_src))
                     .use(variant) # For variable replacement
                     .use(rework_colors()) # rgba(#xxx, 0.x) transformers
                     .use(rework_color) # color tint functions
