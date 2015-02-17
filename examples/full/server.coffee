@@ -19,7 +19,7 @@ full_compilers =
     js: [
         require('metaserve-js-coffee')(),
         require('metaserve-bouncer')(ext: 'bounced.js')
-        require('metaserve-js-browserify-coffee-jsx')(ext: 'jsx.coffee')
+        require('metaserve-js-coffee-reactify')(ext: 'jsx.coffee')
     ]
 
 app.use app.router # Handle the custom routes
