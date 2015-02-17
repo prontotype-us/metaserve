@@ -1,6 +1,6 @@
 {
     "name": "metaserve",
-    "version": "0.2.2",
+    "version": "0.3.0",
     "description": "compile & serve metalanguage assets",
     "homepage": "http://github.com/spro/metaserve",
     "repository": {
@@ -11,29 +11,19 @@
         "name": "Sean Robertson",
         "url": "http://sprobertson.com"
     },
-    "keywords": [
-        "http",
-        "server"
-    ],
-    "main": "bin/metaserve.js",
+    "main": "lib/metaserve.js",
     "bin": {
         "metaserve": "bin/metaserve.js"
     },
     "scripts": {
-        "build": "./build.sh"
+        "build": "make"
     },
     "dependencies": {
-        "browserify": "6.3.x",
-        "browserify-shim": "3.8.x",
-        "coffee-reactify": "2.0.x",
-        "coffee-script": "1.8.x",
-        "jade": "0.34.x",
-        "rework-color-function": "1.1.x",
-        "rework-import": "1.2.x",
-        "rework-plugin-colors": "1.0.x",
-        "rework-shade": "1.4.x",
-        "rework-variant": "0.2.x",
-        "styl": "0.2.x",
-        "uglify-js": "2.4.x"
-    }
+        "express": "3.x.x",
+        "yargs": "1.3.x"
+    },
+    "keywords": [
+        "http",
+        "server"
+    ]
 }
