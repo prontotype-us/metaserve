@@ -1,10 +1,13 @@
 #!/usr/bin/env coffee
 fs = require 'fs'
 url = require 'url'
-_ = require 'underscore'
 
 # Reduce timestamp resolution from ms to s for last-modified
 de_res = (n) -> Math.floor(n/1000)*1000
+
+# IsA helpers
+isArray = (a) -> Array.isArray(a)
+isString = (s) -> typeof s == 'string'
 
 # Default options
 VERBOSE = process.env.METASERVE_VERBOSE?
@@ -17,7 +20,7 @@ DEFAULT_COMPILERS = ->
 module.exports = metaserve = (options={}) ->
 
     # Support both metaserve(base_dir) and metaserve(options) syntax
-    if _.isString options
+    if isString options
         options = {base_dir: options}
 
     # Fill in default options
@@ -39,7 +42,7 @@ module.exports = metaserve = (options={}) ->
                 url_match = '\/(.*)\.' + url_match
 
             # Compilers may be singular or a prioritized array
-            compilers = [compilers] if !_.isArray compilers
+            compilers = [compilers] if !isArray compilers
 
             # If it's a compileable file type...
             if matched = file_url.match new RegExp url_match
