@@ -1,6 +1,13 @@
-link(rel='stylesheet', href='/css/hello.css')
+link(rel='stylesheet', href='/css/text.css')
+link(rel='stylesheet', href='/css/colors.css')
 
 h1#title hello
 p Welcome to a page with various enhancements made possible by the advanced web technologies called CSS and JavaScript.
+p.note There are 4 included files - two are interpreted as CSS and two as JS. The actual files are:
+    li a <code>.sass</code> file compiled with Styl
+    li a <code>.coffee</code> file compiled with CoffeeScript
+    li a <code>.css</code> file served from disk
+    li a <code>.js</code> file served from disk
 
-script(type='text/javascript', src='/js/hello.js')
+script(type='text/javascript', src='/js/animation.js')
+script(type='text/javascript', src='/js/logging.js')
