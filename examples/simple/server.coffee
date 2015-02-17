@@ -1,5 +1,5 @@
 express = require 'express'
-metaserve = require '/home/sean/Projects/metaserve/src/metaserve'
+metaserve = require 'metaserve'
 
 app = express()
 app.use(metaserve())

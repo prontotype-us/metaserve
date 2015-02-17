@@ -1,5 +1,5 @@
-metaserve = require('metaserve')
-express = require('express')
+metaserve = require 'metaserve'
+express = require 'express'
 
 app = express()
 
