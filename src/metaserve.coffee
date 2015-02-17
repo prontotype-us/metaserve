@@ -80,14 +80,12 @@ if require.main == module
     express = require 'express'
     argv = require('yargs').argv
 
-    HOST = argv.host || '127.0.0.1'
-    PORT = argv.port || 8000
-    BASE_DIR = argv._[0] || './static'
+    HOST = argv.host || process.env.METASERVE_HOST || '0.0.0.0'
+    PORT = argv.port || process.env.METASERVE_PORT || 8000
+    BASE_DIR = argv['base-dir'] || process.env.METASERVE_BASE_DIR || './static'
 
-    options = base_dir: BASE_DIR
+    app = express()
+    app.use(metaserve(base_dir: BASE_DIR))
 
-    server = express()
-        .use(metaserve(options))
-
-    server.listen PORT, HOST, -> console.log "metaserving on #{ HOST }:#{ PORT }..."
+    app.listen PORT, HOST, -> console.log "Metaserving on http://#{HOST}:#{PORT}/"
 

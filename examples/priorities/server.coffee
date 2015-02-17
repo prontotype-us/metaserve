@@ -12,6 +12,7 @@ prioritized_compilers =
 app = express()
     .use(metaserve({base_dir: '.', compilers: prioritized_compilers}))
 
+HOST = process.env.METASERVE_HOST || '0.0.0.0'
 PORT = process.env.METASERVE_PORT || 8000
-app.listen(PORT, '0.0.0.0', -> console.log "Metaserving at http://localhost:#{ PORT }/")
+app.listen PORT, HOST, -> console.log "Metaserving on http://#{HOST}:#{PORT}/"
 

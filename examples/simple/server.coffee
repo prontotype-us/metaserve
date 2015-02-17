@@ -4,5 +4,7 @@ metaserve = require 'metaserve'
 app = express()
 app.use(metaserve())
 
-app.listen 8000, -> console.log "listening at http://localhost:8000/"
+HOST = process.env.METASERVE_HOST || '0.0.0.0'
+PORT = process.env.METASERVE_PORT || 8000
+app.listen PORT, HOST, -> console.log "Metaserving on http://#{HOST}:#{PORT}/"
 
