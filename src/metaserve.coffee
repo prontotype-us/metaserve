@@ -32,7 +32,6 @@ module.exports = metaserve = (options={}) ->
 
         # Translate directory requests to index.html requests
         if file_url.slice(-1)[0] == '/' then file_url += 'index.html'
-        console.log "[#{ req.method }] #{ file_url }"
 
         # Loop through each of the file types to see if the url matches
         for url_match, compilers of options.compilers
