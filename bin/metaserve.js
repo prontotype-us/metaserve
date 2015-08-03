@@ -57,6 +57,9 @@
         if (!isArray(compilers)) {
           compilers = [compilers];
         }
+        compilers = compilers.filter(function(c) {
+          return c != null;
+        });
         if (matched = file_url.match(new RegExp(url_match))) {
           for (_i = 0, _len = compilers.length; _i < _len; _i++) {
             compiler = compilers[_i];

@@ -42,6 +42,7 @@ module.exports = metaserve = (options={}) ->
 
             # Compilers may be singular or a prioritized array
             compilers = [compilers] if !isArray compilers
+            compilers = compilers.filter (c) -> c? # Filter out non-compilers
 
             # If it's a compileable file type...
             if matched = file_url.match new RegExp url_match
