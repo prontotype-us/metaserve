@@ -76,7 +76,7 @@ module.exports = metaserve = (options={}) ->
             console.log '[normalserve] Falling back with ' + filename if VERBOSE
             res.sendfile filename
         else
-            res.send 404, '404. Could not find ' + file_url
+            next()
 
 # Stand-alone mode
 if require.main == module
