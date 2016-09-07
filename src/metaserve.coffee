@@ -9,6 +9,11 @@ de_res = (n) -> Math.floor(n/1000)*1000
 isArray = (a) -> Array.isArray(a)
 isString = (s) -> typeof s == 'string'
 
+bouncedExtension = (filename) ->
+    parts = filename.split('.')
+    parts.splice(-1, 0, 'bounced')
+    parts.join('.')
+
 # Default options
 VERBOSE = process.env.METASERVE_VERBOSE?
 DEFAULT_BASE_DIR = './static'
@@ -106,8 +111,31 @@ if require.main == module
     PORT = argv.port || process.env.METASERVE_PORT || 8000
     BASE_DIR = argv['base-dir'] || process.env.METASERVE_BASE_DIR || './static'
 
-    app = express()
-    app.use(metaserve(base_dir: BASE_DIR))
+    HTML_COMPILER = argv.html || 'jade'
+    JS_COMPILER = argv.js || 'coffee'
+    CSS_COMPILER = argv.css || 'styl'
 
-    app.listen PORT, HOST, -> console.log "Metaserving on http://#{HOST}:#{PORT}/"
+    compilers =
+        html: require("metaserve-html-#{HTML_COMPILER}")()
+        js: require("metaserve-js-#{JS_COMPILER}")()
+        css: require("metaserve-css-#{CSS_COMPILER}")()
+
+    options = {base_dir: BASE_DIR, compilers}
+
+    if filename = argv.bounce
+        console.log "[metaserve] Bouncing #{filename} ..."
+        metaserve_compile filename, options, (err, response) ->
+            if response?.compiled
+                bounced_filename = bouncedExtension filename
+                fs.writeFileSync BASE_DIR + bounced_filename, response.compiled
+                console.log "[metaserve] Wrote to #{bounced_filename}"
+
+            else
+                console.log "[metaserve] Bouncing failed", err
+
+    else
+        app = express()
+        app.use(metaserve(options))
+
+        app.listen PORT, HOST, -> console.log "Metaserving on http://#{HOST}:#{PORT}/"
 
