@@ -96,10 +96,8 @@ metaserve_compile = (file_url, options, cb) ->
 
                 else
                     console.log "[metaserve] File not found for #{filename}" if VERBOSE
-                    return cb null
 
     # Fallback if nothing matched
-    console.log "[metaserve] Compiler not found for #{file_url}" if VERBOSE
     cb null
 
 # Stand-alone mode
