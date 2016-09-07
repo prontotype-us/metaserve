@@ -33,50 +33,69 @@ module.exports = metaserve = (options={}) ->
         # Translate directory requests to index.html requests
         if file_url.slice(-1)[0] == '/' then file_url += 'index.html'
 
-        # Loop through each of the file types to see if the url matches
-        for url_match, compilers of options.compilers
+        metaserve_compile file_url, options, (err, response) ->
+            if err
+                res.send 500, err
 
-            # The URL pattern may just be an extension
-            if !url_match.match '\/'
-                url_match = '\/(.*)\.' + url_match
+            else if response?.compiled
+                if response.content_type
+                    res.setHeader 'Content-Type', response.content_type
+                res.end response.compiled
 
-            # Compilers may be singular or a prioritized array
-            compilers = [compilers] if !isArray compilers
-            compilers = compilers.filter (c) -> c? # Filter out non-compilers
+            else
+                # If all else fails just use express's res.sendfile
+                filename = options.base_dir + file_url
+                if fs.existsSync filename
+                    console.log '[normalserve] Falling back with ' + filename if VERBOSE
+                    res.sendfile filename
+                else
+                    console.log '[normalserve] Could not find ' + filename if VERBOSE
+                    next()
 
-            # If it's a compileable file type...
-            if matched = file_url.match new RegExp url_match
+metaserve_compile = (file_url, options, cb) ->
 
-                # Loop through the sources
-                for compiler in compilers
+    # Loop through each of the file types to see if the url matches
+    for url_match, compilers of options.compilers
 
-                    # Build the corresponding source file's filename
-                    {base_dir, ext} = compiler.options
-                    base_dir ||= options.base_dir
-                    filename_stem = matched[1]
-                    filename = base_dir + '/' + filename_stem + '.' + ext
+        # The URL pattern may just be an extension
+        if !url_match.match '\/'
+            url_match = '\/(.*)\.' + url_match
+        url_match = new RegExp url_match
 
-                    # Try finding and compiling the source file
-                    if fs.existsSync filename
-                        if compiler.shouldCompile?
-                            if !compiler.shouldCompile(filename)(req, res, next)
-                                console.log "[metaserve] Skipping compiler for #{ filename }" if VERBOSE
-                                continue
+        # Compilers may be singular or a prioritized array
+        compilers = [compilers] if !isArray compilers
+        compilers = compilers.filter (c) -> c? # Filter out non-compilers
 
-                        # Execute the compiler and let it handle the rest
-                        console.log "[metaserve] Using compiler for #{ file_url } (#{ filename })" if VERBOSE
-                        return compiler.compile(filename)(req, res, next)
+        # If it's a compileable file type...
+        if matched = file_url.match url_match
 
-                    else
-                        console.log "[metaserve] File not found for #{ filename }" if VERBOSE
+            # Loop through the sources
+            for compiler in compilers
 
-        # If all else fails just use express's res.sendfile
-        filename = options.base_dir + file_url
-        if fs.existsSync filename
-            console.log '[normalserve] Falling back with ' + filename if VERBOSE
-            res.sendfile filename
-        else
-            next()
+                # Build the corresponding source file's filename
+                {base_dir, ext} = compiler.options
+                base_dir ||= options.base_dir
+                filename_stem = matched[1]
+                filename = base_dir + '/' + filename_stem + '.' + ext
+
+                # Try finding and compiling the source file
+                if fs.existsSync filename
+                    if compiler.shouldCompile?
+                        if !compiler.shouldCompile(filename)
+                            console.log "[metaserve] Skipping compiler for #{filename}" if VERBOSE
+                            continue
+
+                    # Execute the compiler and let it handle the rest
+                    console.log "[metaserve] Using compiler for #{file_url} (#{filename})" if VERBOSE
+                    return compiler.compile filename, cb
+
+                else
+                    console.log "[metaserve] File not found for #{filename}" if VERBOSE
+                    return cb null
+
+    # Fallback if nothing matched
+    console.log "[metaserve] Compiler not found for #{file_url}" if VERBOSE
+    cb null
 
 # Stand-alone mode
 if require.main == module
