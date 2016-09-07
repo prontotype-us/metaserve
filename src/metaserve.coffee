@@ -105,7 +105,7 @@ metaserve_compile = (file_url, options, cb) ->
 # Stand-alone mode
 if require.main == module
     express = require 'express'
-    argv = require('yargs').argv
+    argv = require('minimist')(process.argv)
 
     HOST = argv.host || process.env.METASERVE_HOST || '0.0.0.0'
     PORT = argv.port || process.env.METASERVE_PORT || 8000
