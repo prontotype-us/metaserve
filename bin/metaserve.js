@@ -33,7 +33,7 @@
   DEFAULT_COMPILERS = function() {
     return {
       html: require('metaserve-html-jade')(),
-      js: require('metaserve-js-coffee')(),
+      js: require('metaserve-js-coffee-reactify')(),
       css: require('metaserve-css-styl')()
     };
   };
@@ -137,7 +137,7 @@
     PORT = argv.port || process.env.METASERVE_PORT || 8000;
     BASE_DIR = argv['base-dir'] || process.env.METASERVE_BASE_DIR || './static';
     HTML_COMPILER = argv.html || 'jade';
-    JS_COMPILER = argv.js || 'coffee';
+    JS_COMPILER = argv.js || 'coffee-reactify';
     CSS_COMPILER = argv.css || 'styl';
     compilers = {
       html: require("metaserve-html-" + HTML_COMPILER)(),

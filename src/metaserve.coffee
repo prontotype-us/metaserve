@@ -19,7 +19,7 @@ VERBOSE = process.env.METASERVE_VERBOSE?
 DEFAULT_BASE_DIR = './static'
 DEFAULT_COMPILERS = ->
     html: require('metaserve-html-jade')()
-    js: require('metaserve-js-coffee')()
+    js: require('metaserve-js-coffee-reactify')()
     css: require('metaserve-css-styl')()
 
 module.exports = metaserve = (options={}) ->
@@ -113,7 +113,7 @@ if require.main == module
     BASE_DIR = argv['base-dir'] || process.env.METASERVE_BASE_DIR || './static'
 
     HTML_COMPILER = argv.html || 'jade'
-    JS_COMPILER = argv.js || 'coffee'
+    JS_COMPILER = argv.js || 'coffee-reactify'
     CSS_COMPILER = argv.css || 'styl'
 
     compilers =
