@@ -42,6 +42,9 @@ module.exports = metaserve = (options={}) ->
             if err
                 res.send 500, err
 
+            else if typeof response == 'string'
+                res.end response
+
             else if response?.compiled
                 if response.content_type
                     res.setHeader 'Content-Type', response.content_type
