@@ -137,6 +137,6 @@ if require.main == module
     else
         app = express()
         app.use(metaserve(options))
-
+        app.get '/', (req, res) -> res.render 'index'
         app.listen PORT, HOST, -> console.log "Metaserving on http://#{HOST}:#{PORT}/"
 
