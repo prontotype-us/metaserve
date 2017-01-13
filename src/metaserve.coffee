@@ -126,13 +126,16 @@ if require.main == module
     if filename = argv.bounce
         console.log "[metaserve] Bouncing #{filename} ..."
         metaserve_compile filename, options, (err, response) ->
-            if response?.compiled
+            if response?.compiled?
                 bounced_filename = bouncedExtension filename
                 fs.writeFileSync BASE_DIR + bounced_filename, response.compiled
                 console.log "[metaserve] Wrote to #{bounced_filename}"
 
-            else
+            else if err?
                 console.log "[metaserve] Bouncing failed", err
+
+            else
+                console.log "[metaserve] Bouncing failed, make sure .#{filename} exists"
 
     else
         app = express()
