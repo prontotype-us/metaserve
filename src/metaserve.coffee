@@ -43,6 +43,8 @@ module.exports = metaserve = (options={}) ->
                 res.send 500, err
 
             else if typeof response == 'string'
+                if file_url.endsWith '.js' then res.setHeader 'Content-Type', 'text/javascript'
+                if file_url.endsWith '.css' then res.setHeader 'Content-Type', 'text/css'
                 res.end response
 
             else if response?.compiled
