@@ -1,6 +1,7 @@
 #!/usr/bin/env coffee
 fs = require 'fs'
 url = require 'url'
+util = require 'util'
 
 # Reduce timestamp resolution from ms to s for last-modified
 de_res = (n) -> Math.floor(n/1000)*1000
@@ -112,16 +113,23 @@ if require.main == module
 
     HOST = argv.host || process.env.METASERVE_HOST || '0.0.0.0'
     PORT = argv.port || process.env.METASERVE_PORT || 8000
+    CONFIG_FILE = argv.c || argv.config || './config.json'
     BASE_DIR = argv['base-dir'] || process.env.METASERVE_BASE_DIR || './static'
 
     HTML_COMPILER = argv.html || 'jade'
     JS_COMPILER = argv.js || 'coffee-reactify'
     CSS_COMPILER = argv.css || 'styl'
 
+    try
+        config = JSON.parse fs.readFileSync CONFIG_FILE, 'utf8'
+        console.log "Using config:", util.inspect(config, {depth: null, colors: true})
+    catch e
+        config = {}
+
     compilers =
-        html: require("metaserve-html-#{HTML_COMPILER}")()
-        js: require("metaserve-js-#{JS_COMPILER}")()
-        css: require("metaserve-css-#{CSS_COMPILER}")()
+        html: require("metaserve-html-#{HTML_COMPILER}")(config.html)
+        js: require("metaserve-js-#{JS_COMPILER}")(config.js)
+        css: require("metaserve-css-#{CSS_COMPILER}")(config.css)
 
     options = {base_dir: BASE_DIR, compilers}
 
