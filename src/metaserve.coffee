@@ -30,7 +30,7 @@ DEFAULT_COMPILERS = ->
 
 # Middleware for use in Express app
 
-module.exports = metaserve_middleware = (compilers, config={}) ->
+module.exports = metaserve_middleware = (config={}, compilers) ->
 
     # Support both metaserve(base_dir) and metaserve(config) syntax
     if isString config
@@ -182,6 +182,6 @@ if require.main == module
         app.use (req, res, next) ->
             console.log "[#{req.method}] #{req.path}"
             next()
-        app.use(metaserve_middleware(compilers, config))
+        app.use(metaserve_middleware(config, compilers))
         app.listen PORT, HOST, -> console.log "Metaserving on http://#{HOST}:#{PORT}/"
 

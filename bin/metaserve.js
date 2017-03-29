@@ -49,7 +49,7 @@
     };
   };
 
-  module.exports = metaserve_middleware = function(compilers, config) {
+  module.exports = metaserve_middleware = function(config, compilers) {
     if (config == null) {
       config = {};
     }
@@ -213,7 +213,7 @@
         console.log("[" + req.method + "] " + req.path);
         return next();
       });
-      app.use(metaserve_middleware(compilers, config));
+      app.use(metaserve_middleware(config, compilers));
       app.listen(PORT, HOST, function() {
         return console.log("Metaserving on http://" + HOST + ":" + PORT + "/");
       });
