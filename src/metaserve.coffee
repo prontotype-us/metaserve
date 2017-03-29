@@ -10,42 +10,53 @@ de_res = (n) -> Math.floor(n/1000)*1000
 isArray = (a) -> Array.isArray(a)
 isString = (s) -> typeof s == 'string'
 
-bouncedExtension = (filename) ->
-    parts = filename.split('.')
-    parts.splice(-1, 0, 'bounced')
-    parts.join('.')
+# Set unset values of an object from a default object
+defaults = (o, d) ->
+    o_ = {}
+    for k, v of o
+        o_[k] = v
+    for k, v of d
+        o_[k] = v if !o[k]?
+    return o_
 
-# Default options
+# Default config
+
 VERBOSE = process.env.METASERVE_VERBOSE?
-DEFAULT_BASE_DIR = './static'
+DEFAULT_BASE_DIR = '.'
 DEFAULT_COMPILERS = ->
-    html: require('metaserve-html-jade')()
-    js: require('metaserve-js-coffee-reactify')()
-    css: require('metaserve-css-styl')()
+    html: require 'metaserve-html-jade'
+    js: require 'metaserve-js-coffee-reactify'
+    css: require 'metaserve-css-styl'
 
-module.exports = metaserve = (options={}) ->
+# Middleware for use in Express app
 
-    # Support both metaserve(base_dir) and metaserve(options) syntax
-    if isString options
-        options = {base_dir: options}
+module.exports = metaserve_middleware = (compilers, config={}) ->
 
-    # Fill in default options
-    options.base_dir ||= DEFAULT_BASE_DIR
-    options.compilers ||= DEFAULT_COMPILERS()
+    # Support both metaserve(base_dir) and metaserve(config) syntax
+    if isString config
+        config = {base_dir: config}
+
+    # Fill in default config
+    compilers ||= DEFAULT_COMPILERS()
+    config.base_dir ||= DEFAULT_BASE_DIR
 
     return (req, res, next) ->
-        file_url = url.parse(req.url).pathname
+        file_path = url.parse(req.url).pathname
 
         # Translate directory requests to index.html requests
-        if file_url.slice(-1)[0] == '/' then file_url += 'index.html'
+        if file_path.slice(-1)[0] == '/' then file_path += 'index.html'
 
-        metaserve_compile file_url, options, (err, response) ->
+        metaserve_compile compilers, file_path, config, {req}, (err, response) ->
             if err
                 res.send 500, err
 
             else if typeof response == 'string'
-                if file_url.endsWith '.js' then res.setHeader 'Content-Type', 'text/javascript'
-                if file_url.endsWith '.css' then res.setHeader 'Content-Type', 'text/css'
+                if file_path.endsWith '.js'
+                    res.setHeader 'Content-Type', 'application/javascript'
+                else if file_path.endsWith '.css'
+                    res.setHeader 'Content-Type', 'text/css'
+                else if file_path.endsWith '.html'
+                    res.setHeader 'Content-Type', 'text/html'
                 res.end response
 
             else if response?.compiled
@@ -55,7 +66,7 @@ module.exports = metaserve = (options={}) ->
 
             else
                 # If all else fails just use express's res.sendfile
-                filename = options.base_dir + file_url
+                filename = config.base_dir + file_path
                 if fs.existsSync filename
                     console.log '[normalserve] Falling back with ' + filename if VERBOSE
                     res.sendfile filename
@@ -63,42 +74,51 @@ module.exports = metaserve = (options={}) ->
                     console.log '[normalserve] Could not find ' + filename if VERBOSE
                     next()
 
-metaserve_compile = (file_url, options, cb) ->
+# Compiling a given a set of compilers, file, and config
+
+metaserve_compile = (all_compilers, file_path, config, context, cb) ->
+    console.log '[metaserve_compile] file_path=', file_path, 'config=', config if VERBOSE
 
     # Loop through each of the file types to see if the url matches
-    for url_match, compilers of options.compilers
+    for path_match, compilers of all_compilers
 
         # The URL pattern may just be an extension
-        if !url_match.match '\/'
-            url_match = '\/(.*)\.' + url_match
-        url_match = new RegExp url_match
+        if !path_match.match '\/'
+            path_match = '\/(.*)\.' + path_match
+        path_match = new RegExp path_match
 
         # Compilers may be singular or a prioritized array
         compilers = [compilers] if !isArray compilers
         compilers = compilers.filter (c) -> c? # Filter out non-compilers
 
         # If it's a compileable file type...
-        if matched = file_url.match url_match
+        if matched = file_path.match path_match
 
             # Loop through the sources
             for compiler in compilers
 
                 # Build the corresponding source file's filename
-                {base_dir, ext} = compiler.options
-                base_dir ||= options.base_dir
+                ext = compiler.ext
+                base_dir = config.base_dir or '.'
                 filename_stem = matched[1]
                 filename = base_dir + '/' + filename_stem + '.' + ext
 
                 # Try finding and compiling the source file
                 if fs.existsSync filename
+
+                    # Set up config to pass to compiler
+                    compiler_config = defaults config[ext] or {}, compiler.default_config
+                    compiler_config.base_dir = base_dir
+
                     if compiler.shouldCompile?
                         if !compiler.shouldCompile(filename)
                             console.log "[metaserve] Skipping compiler for #{filename}" if VERBOSE
                             continue
 
                     # Execute the compiler and let it handle the rest
-                    console.log "[metaserve] Using compiler for #{file_url} (#{filename})" if VERBOSE
-                    return compiler.compile filename, cb
+                    console.log "[metaserve] Using compiler for #{file_path} (#{filename})" if VERBOSE
+                    context = Object.assign {}, config.globals, context
+                    return compiler.compile filename, compiler_config, context, cb
 
                 else
                     console.log "[metaserve] File not found for #{filename}" if VERBOSE
@@ -107,49 +127,61 @@ metaserve_compile = (file_url, options, cb) ->
     cb null
 
 # Stand-alone mode
+
 if require.main == module
     express = require 'express'
     argv = require('minimist')(process.argv)
 
     HOST = argv.host || process.env.METASERVE_HOST || '0.0.0.0'
     PORT = argv.port || process.env.METASERVE_PORT || 8000
-    CONFIG_FILE = argv.c || argv.config || './config.json'
-    BASE_DIR = argv['base-dir'] || process.env.METASERVE_BASE_DIR || './static'
+    CONFIG_FILE = argv.c || argv.config
+    BASE_DIR = argv['base-dir'] || process.env.METASERVE_BASE_DIR || '.'
+
+    if CONFIG_FILE?
+        try
+            config = JSON.parse fs.readFileSync CONFIG_FILE, 'utf8'
+            console.log "Using config:", util.inspect(config, {depth: null, colors: true}) if VERBOSE
+        catch e
+            console.log "Could not read config: #{CONFIG_FILE}"
+            process.exit 1
+    else
+        config = {}
 
     HTML_COMPILER = argv.html || 'jade'
     JS_COMPILER = argv.js || 'coffee-reactify'
     CSS_COMPILER = argv.css || 'styl'
 
-    try
-        config = JSON.parse fs.readFileSync CONFIG_FILE, 'utf8'
-        console.log "Using config:", util.inspect(config, {depth: null, colors: true})
-    catch e
-        config = {}
-
     compilers =
-        html: require("metaserve-html-#{HTML_COMPILER}")(config.html)
-        js: require("metaserve-js-#{JS_COMPILER}")(config.js)
-        css: require("metaserve-css-#{CSS_COMPILER}")(config.css)
+        html: require "metaserve-html-#{HTML_COMPILER}"
+        js: require "metaserve-js-#{JS_COMPILER}"
+        css: require "metaserve-css-#{CSS_COMPILER}"
 
-    options = {base_dir: BASE_DIR, compilers}
+    # Bounce the file_path passed with the --bounce flag
 
-    if filename = argv.bounce
-        console.log "[metaserve] Bouncing #{filename} ..."
-        metaserve_compile filename, options, (err, response) ->
+    if file_path = argv.bounce
+        if !file_path.startsWith '/'
+            file_path = '/' + file_path
+
+        metaserve_compile compilers, file_path, config, {}, (err, response) ->
             if response?.compiled?
-                bounced_filename = bouncedExtension filename
-                fs.writeFileSync BASE_DIR + bounced_filename, response.compiled
-                console.log "[metaserve] Wrote to #{bounced_filename}"
+                if typeof argv.out == 'boolean' # No output filename, just print it
+                    console.log response.compiled
+                else
+                    bounced_filename = argv.out or BASE_DIR + filename + '.bounced'
+                    fs.writeFileSync bounced_filename, response.compiled
+                    console.log "[metaserve] Bounced to #{bounced_filename}"
 
             else if err?
                 console.log "[metaserve] Bouncing failed", err
 
             else
-                console.log "[metaserve] Bouncing failed, make sure .#{filename} exists"
+                console.log "[metaserve] Bouncing failed, make sure path #{file_path} exists"
 
     else
         app = express()
-        app.use(metaserve(options))
-        app.get '/', (req, res) -> res.render 'index'
+        app.use (req, res, next) ->
+            console.log "[#{req.method}] #{req.path}"
+            next()
+        app.use(metaserve_middleware(compilers, config))
         app.listen PORT, HOST, -> console.log "Metaserving on http://#{HOST}:#{PORT}/"
 
