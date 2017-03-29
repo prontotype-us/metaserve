@@ -1,6 +1,6 @@
 {
     "name": "metaserve",
-    "version": "0.5.2",
+    "version": "0.5.3",
     "description": "compile & serve metalanguage assets",
     "homepage": "http://github.com/spro/metaserve",
     "repository": {

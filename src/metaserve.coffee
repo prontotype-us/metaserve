@@ -119,6 +119,7 @@ metaserve_compile = (all_compilers, file_path, config, context, cb) ->
 
                     # Set up config to pass to compiler
                     compiler_config = defaults config[ext] or {}, compiler.default_config
+                    compiler_config.bouncing = config.bouncing
                     compiler_config.base_dir = base_dir
 
                     compiler_context = Object.assign {}, config.globals, context
@@ -173,6 +174,8 @@ if require.main == module
     if file_path = argv.bounce
         if !file_path.startsWith '/'
             file_path = '/' + file_path
+
+        config.bouncing = true
 
         metaserve_compile compilers, file_path, config, {}, (err, response) ->
             if response?.compiled?
