@@ -23,21 +23,21 @@ defaults = (o, d) ->
 
 VERBOSE = process.env.METASERVE_VERBOSE?
 DEFAULT_BASE_DIR = '.'
-DEFAULT_COMPILERS = ->
+DEFAULT_COMPILERS =
     html: require 'metaserve-html-jade'
     js: require 'metaserve-js-coffee-reactify'
     css: require 'metaserve-css-styl'
 
 # Middleware for use in Express app
 
-module.exports = metaserve_middleware = (config={}, compilers) ->
+module.exports = metaserve_middleware = (config={}, compilers={}) ->
 
     # Support both metaserve(base_dir) and metaserve(config) syntax
     if isString config
         config = {base_dir: config}
 
     # Fill in default config
-    compilers ||= DEFAULT_COMPILERS()
+    compilers = defaults compilers, DEFAULT_COMPILERS
     config.base_dir ||= DEFAULT_BASE_DIR
 
     return (req, res, next) ->
