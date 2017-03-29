@@ -57,16 +57,26 @@ A plugin is simply a Javascript module with a few fields:
 * `compiler(filename, config, context, cb)`
     * A function that should transform some source file and call back with an object `{content_type, compiled}` 
 
-Here's a simple plugin that responds with a message about the filename:
+Here's a simple plugin that reads and reverses a text file:
 
 ```javascript
+var fs = require('fs');
+
 module.exports = {
-    ext: 'fakeout',
+    ext: 'txt',
 
     compile: function(filename, config, context, cb) {
-        return cb(null, {
-            content_type: 'text/plain',
-            compiled: "you asked for " + filename + " but too bad"
+        fs.readFile(filename, function(err, source) {
+            if (err)
+                return cb(err);
+            else {
+                source = source.toString();
+                reversed = source.split('').reverse().join('')
+                cb(null, {
+                    content_type: 'text/plain',
+                    compiled: reversed
+                });
+            }
         });
     }
 };
@@ -76,7 +86,7 @@ By passing an object of compilers to the metaserve middleware, paths that match 
 
 ```javascript
 app.use(metaserve('./app', {
-    txt: require('./fakeout-plugin')
+    txt: require('./reverse-plugin')
 }));
 ```
 
