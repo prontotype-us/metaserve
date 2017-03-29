@@ -2,6 +2,7 @@
 fs = require 'fs'
 url = require 'url'
 util = require 'util'
+path = require 'path'
 
 # Reduce timestamp resolution from ms to s for last-modified
 de_res = (n) -> Math.floor(n/1000)*1000
@@ -82,8 +83,11 @@ metaserve_compile = (all_compilers, file_path, config, context, cb) ->
     # Loop through each of the file types to see if the url matches
     for path_match, compilers of all_compilers
 
+        if path_match == '*'
+            path_match = '.*'
+
         # The URL pattern may just be an extension
-        if !path_match.match '\/'
+        else if !path_match.match('\/')
             path_match = '\/(.*)\.' + path_match
         path_match = new RegExp path_match
 
@@ -101,7 +105,14 @@ metaserve_compile = (all_compilers, file_path, config, context, cb) ->
                 ext = compiler.ext
                 base_dir = config.base_dir or '.'
                 filename_stem = matched[1]
-                filename = base_dir + '/' + filename_stem + '.' + ext
+
+                # If ext is "+something", add onto the path
+                if ext[0] == '+'
+                    filename = path.join base_dir, file_path + '.' + ext.slice(1)
+
+                # Otherwise replace existing extension
+                else
+                    filename = path.join base_dir, filename_stem + '.' + ext
 
                 # Try finding and compiling the source file
                 if fs.existsSync filename
@@ -110,15 +121,16 @@ metaserve_compile = (all_compilers, file_path, config, context, cb) ->
                     compiler_config = defaults config[ext] or {}, compiler.default_config
                     compiler_config.base_dir = base_dir
 
+                    compiler_context = Object.assign {}, config.globals, context
+
                     if compiler.shouldCompile?
-                        if !compiler.shouldCompile(filename)
+                        if !compiler.shouldCompile(filename, compiler_config, compiler_context)
                             console.log "[metaserve] Skipping compiler for #{filename}" if VERBOSE
                             continue
 
                     # Execute the compiler and let it handle the rest
                     console.log "[metaserve] Using compiler for #{file_path} (#{filename})" if VERBOSE
-                    context = Object.assign {}, config.globals, context
-                    return compiler.compile filename, compiler_config, context, cb
+                    return compiler.compile filename, compiler_config, compiler_context, cb
 
                 else
                     console.log "[metaserve] File not found for #{filename}" if VERBOSE
@@ -167,7 +179,7 @@ if require.main == module
                 if typeof argv.out == 'boolean' # No output filename, just print it
                     console.log response.compiled
                 else
-                    bounced_filename = argv.out or BASE_DIR + filename + '.bounced'
+                    bounced_filename = argv.out or path.join BASE_DIR, file_path + '.bounced'
                     fs.writeFileSync bounced_filename, response.compiled
                     console.log "[metaserve] Bounced to #{bounced_filename}"
 
