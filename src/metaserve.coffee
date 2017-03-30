@@ -147,17 +147,20 @@ if require.main == module
 
     HOST = argv.host || process.env.METASERVE_HOST || '0.0.0.0'
     PORT = argv.port || process.env.METASERVE_PORT || 8000
-    CONFIG_FILE = argv.c || argv.config
     BASE_DIR = argv['base-dir'] || process.env.METASERVE_BASE_DIR || '.'
 
-    if CONFIG_FILE?
-        try
-            config = JSON.parse fs.readFileSync CONFIG_FILE, 'utf8'
-            console.log "Using config:", util.inspect(config, {depth: null, colors: true}) if VERBOSE
-        catch e
+    # Use a specific config or config.json
+    CONFIG_FILE = argv.c || argv.config
+    IS_SPECIFIC_CONFIG = CONFIG_FILE?
+    CONFIG_FILE ||= 'config.json'
+
+    try
+        config = JSON.parse fs.readFileSync CONFIG_FILE, 'utf8'
+        console.log "Using config:", util.inspect(config, {depth: null, colors: true}) if VERBOSE
+    catch e
+        if IS_SPECIFIC_CONFIG # Only error if specific config fails
             console.log "Could not read config: #{CONFIG_FILE}"
             process.exit 1
-    else
         config = {}
 
     HTML_COMPILER = argv.html || 'jade'
