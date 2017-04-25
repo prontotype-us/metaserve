@@ -162,7 +162,9 @@ if require.main == module
             console.log "Could not read config: #{CONFIG_FILE}"
             process.exit 1
         else
-            config = {base_dir: BASE_DIR}
+            config = {}
+
+    config.base_dir ||= BASE_DIR
 
     HTML_COMPILER = argv.html || 'jade'
     JS_COMPILER = argv.js || 'coffee-reactify'
