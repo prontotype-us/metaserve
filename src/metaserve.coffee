@@ -161,7 +161,8 @@ if require.main == module
         if IS_SPECIFIC_CONFIG # Only error if specific config fails
             console.log "Could not read config: #{CONFIG_FILE}"
             process.exit 1
-        config = {}
+        else
+            config = {base_dir: BASE_DIR}
 
     HTML_COMPILER = argv.html || 'jade'
     JS_COMPILER = argv.js || 'coffee-reactify'
@@ -185,7 +186,7 @@ if require.main == module
                 if typeof argv.out == 'boolean' # No output filename, just print it
                     console.log response.compiled
                 else
-                    bounced_filename = argv.out or path.join BASE_DIR, file_path + '.bounced'
+                    bounced_filename = argv.out or path.join config.base_dir, file_path + '.bounced'
                     fs.writeFileSync bounced_filename, response.compiled
                     console.log "[metaserve] Bounced to #{bounced_filename}"
 
