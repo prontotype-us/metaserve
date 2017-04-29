@@ -1,9 +1,8 @@
 all:
 	echo "Building metaserve..."
 	coffee -o lib -c src
-	coffee -o bin -c src/metaserve.coffee
-	cp bin/metaserve.js bin/metaserve.js.tmp
-	echo "#!/usr/bin/env node" > bin/metaserve.js.tmp
-	cat bin/metaserve.js >> bin/metaserve.js.tmp
-	mv bin/metaserve.js.tmp bin/metaserve.js
+	cp lib/metaserve.js lib/metaserve.js.tmp
+	echo "#!/usr/bin/env node" > lib/metaserve.js.tmp
+	cat lib/metaserve.js >> lib/metaserve.js.tmp
+	mv lib/metaserve.js.tmp lib/metaserve.js
 
