@@ -23,7 +23,7 @@ defaults = (o, d) ->
 # Default config
 
 VERBOSE = process.env.METASERVE_VERBOSE?
-DEFAULT_BASE_DIR = '.'
+DEFAULT_STATIC_DIR = '.'
 DEFAULT_COMPILERS =
     html: require 'metaserve-html-jade'
     js: require 'metaserve-js-coffee-reactify'
@@ -33,13 +33,13 @@ DEFAULT_COMPILERS =
 
 module.exports = metaserve_middleware = (config={}, compilers={}) ->
 
-    # Support both metaserve(base_dir) and metaserve(config) syntax
+    # Support both metaserve(static_dir) and metaserve(config) syntax
     if isString config
-        config = {base_dir: config}
+        config = {static_dir: config}
 
     # Fill in default config
     compilers = defaults compilers, DEFAULT_COMPILERS
-    config.base_dir ||= DEFAULT_BASE_DIR
+    config.static_dir ||= DEFAULT_STATIC_DIR
 
     return (req, res, next) ->
         file_path = url.parse(req.url).pathname
@@ -67,7 +67,7 @@ module.exports = metaserve_middleware = (config={}, compilers={}) ->
 
             else
                 # If all else fails just use express's res.sendfile
-                filename = config.base_dir + file_path
+                filename = config.static_dir + file_path
                 if fs.existsSync filename
                     console.log '[normalserve] Falling back with ' + filename if VERBOSE
                     res.sendfile filename
@@ -103,16 +103,16 @@ metaserve_compile = (all_compilers, file_path, config, context, cb) ->
 
                 # Build the corresponding source file's filename
                 ext = compiler.ext
-                base_dir = config.base_dir or '.'
+                static_dir = config.static_dir or '.'
                 filename_stem = matched[1]
 
                 # If ext is "+something", add onto the path
                 if ext[0] == '+'
-                    filename = path.join base_dir, file_path + '.' + ext.slice(1)
+                    filename = path.join static_dir, file_path + '.' + ext.slice(1)
 
                 # Otherwise replace existing extension
                 else
-                    filename = path.join base_dir, filename_stem + '.' + ext
+                    filename = path.join static_dir, filename_stem + '.' + ext
 
                 # Try finding and compiling the source file
                 if fs.existsSync filename
@@ -120,7 +120,7 @@ metaserve_compile = (all_compilers, file_path, config, context, cb) ->
                     # Set up config to pass to compiler
                     compiler_config = defaults config[ext] or {}, compiler.default_config
                     compiler_config.bouncing = config.bouncing
-                    compiler_config.base_dir = base_dir
+                    compiler_config.static_dir = static_dir
 
                     compiler_context = Object.assign {}, config.globals, context
 
@@ -147,7 +147,7 @@ if require.main == module
 
     HOST = argv.host || process.env.METASERVE_HOST || '0.0.0.0'
     PORT = argv.port || process.env.METASERVE_PORT || 8000
-    BASE_DIR = argv['base-dir'] || process.env.METASERVE_BASE_DIR || '.'
+    STATIC_DIR = argv['static-dir'] || process.env.METASERVE_STATIC_DIR || '.'
 
     # Use a specific config or config.json
     CONFIG_FILE = argv.c || argv.config
@@ -164,7 +164,7 @@ if require.main == module
         else
             config = {}
 
-    config.base_dir ||= BASE_DIR
+    config.static_dir ||= STATIC_DIR
 
     HTML_COMPILER = argv.html || 'jade'
     JS_COMPILER = argv.js || 'coffee-reactify'
@@ -188,7 +188,7 @@ if require.main == module
                 if typeof argv.out == 'boolean' # No output filename, just print it
                     console.log response.compiled
                 else
-                    bounced_filename = argv.out or path.join config.base_dir, file_path + '.bounced'
+                    bounced_filename = argv.out or path.join config.static_dir, file_path + '.bounced'
                     fs.writeFileSync bounced_filename, response.compiled
                     console.log "[metaserve] Bounced to #{bounced_filename}"
 
