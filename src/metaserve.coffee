@@ -27,7 +27,7 @@ DEFAULT_STATIC_DIR = '.'
 DEFAULT_COMPILERS =
     html: require 'metaserve-html-jade'
     js: require 'metaserve-js-coffee-reactify'
-    css: require 'metaserve-css-styl'
+    css: require 'metaserve-css-postcss'
 
 # Middleware for use in Express app
 
@@ -168,7 +168,7 @@ if require.main == module
 
     HTML_COMPILER = argv.html || 'jade'
     JS_COMPILER = argv.js || 'coffee-reactify'
-    CSS_COMPILER = argv.css || 'styl'
+    CSS_COMPILER = argv.css || 'postcss'
 
     compilers =
         html: require "metaserve-html-#{HTML_COMPILER}"
