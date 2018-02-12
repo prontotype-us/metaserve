@@ -1,6 +1,6 @@
 {
     "name": "metaserve",
-    "version": "0.7.1",
+    "version": "0.7.2",
     "description": "compile & serve metalanguage assets",
     "homepage": "http://github.com/spro/metaserve",
     "repository": {
@@ -21,7 +21,7 @@
     "dependencies": {
         "express": "3.x.x",
         "metaserve-html-jade": "0.2.x",
-        "metaserve-css-postcss": "0.0.3",
+        "metaserve-css-postcss": "0.0.4",
         "metaserve-js-coffee-reactify": "0.2.x",
         "minimist": "1.2.x"
     },
