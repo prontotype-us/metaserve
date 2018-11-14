@@ -25,9 +25,9 @@ defaults = (o, d) ->
 VERBOSE = process.env.METASERVE_VERBOSE?
 DEFAULT_STATIC_DIR = '.'
 DEFAULT_COMPILERS =
-    html: require 'metaserve-html-jade'
+    html: require 'metaserve-html-pug'
     js: require 'metaserve-js-coffee-reactify'
-    css: require 'metaserve-css-postcss'
+    css: require 'metaserve-css-styl'
 
 # Middleware for use in Express app
 
@@ -66,11 +66,11 @@ module.exports = metaserve_middleware = (config={}, compilers={}) ->
                 res.end response.compiled
 
             else
-                # If all else fails just use express's res.sendfile
+                # If all else fails just use express's res.sendFile
                 filename = config.static_dir + file_path
                 if fs.existsSync filename
                     console.log '[normalserve] Falling back with ' + filename if VERBOSE
-                    res.sendfile filename
+                    res.sendFile filename, {root: process.env.PWD}
                 else
                     console.log '[normalserve] Could not find ' + filename if VERBOSE
                     next()
@@ -166,9 +166,9 @@ if require.main == module
 
     config.static_dir ||= STATIC_DIR
 
-    HTML_COMPILER = argv.html || 'jade'
+    HTML_COMPILER = argv.html || 'pug'
     JS_COMPILER = argv.js || 'coffee-reactify'
-    CSS_COMPILER = argv.css || 'postcss'
+    CSS_COMPILER = argv.css || 'styl'
 
     compilers =
         html: require "metaserve-html-#{HTML_COMPILER}"
