@@ -70,7 +70,7 @@ module.exports = metaserve_middleware = (config={}, compilers={}) ->
                 filename = config.static_dir + file_path
                 if fs.existsSync filename
                     console.log '[normalserve] Falling back with ' + filename if VERBOSE
-                    res.sendFile filename, {root: process.env.PWD}
+                    res.sendFile filename, {root: process.cwd()}
                 else
                     console.log '[normalserve] Could not find ' + filename if VERBOSE
                     next()
